@@ -12,11 +12,11 @@ type Config struct {
 	Chunk    int
 	Interval int
 	Tcponly  bool
-	SynRst   bool
 	Monitor struct {
-		Enabled bool
-		Listen  string
-		Timeout int
+		Enabled        bool
+		Listen         string
+		Timeout        int
+		TransitionOnly bool
 	}
 	Http     struct {
 		Method   string

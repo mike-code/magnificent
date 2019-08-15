@@ -1,14 +1,5 @@
 package main
 
-// Uwagi
-//
-// TCP handshake zwraca ACK, ten etap możnaby pominąć przy L4 only
-// config sanity
-// missing SSL implementation and thus doesn't support HTTP/2.0
-// nicer error handling
-// more statuses
-// log format (plain/json)
-//
 import (
 	"os/signal"
 	"os"
@@ -19,7 +10,6 @@ import (
 	"bytes"
 	"strconv"
 	"net/http"
-	// "net/http/httptest"
 	"time"
 	"net"
 	"fmt"
@@ -28,15 +18,19 @@ import (
 
 var (
 	config  Config
-	state   = STATE_DOWN
 	debug   = false
 	verbose = false
 
-	MAP_STATE = map[int]string{
+	MAP_STATE = map[int]string {
 		STATE_UP:         "UP",
 		STATE_DOWN:       "DOWN",
 		STATE_TRANS_UP:   "T_UP",
 		STATE_TRANS_DOWN: "T_DOWN",
+	}
+
+	MAP_CHECK = map[int]string {
+		NOW_DEAD:  "ERR",
+		NOW_ALIVE: "OK",
 	}
 )
 
@@ -50,24 +44,13 @@ const (
 	NOW_ALIVE        = 1
 )
 
-// func SpinServer() {
-// 	ts := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 		fmt.Fprintln(w, "Hello, client")
-// 	}))
-
-// 	ts.Start()
-
-// 	// fmt.Println(ts.URL)
-
-// 	var inn string
-// 	fmt.Scanln(&inn)
-// }
-
 func ValidateHttpResponse(buffer []byte) (error) {
 	response, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(buffer)), nil)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Could not parse HTTP response. %s", err.Error()))
 	}
+
+	state.httpStatus = response.StatusCode
 
 	if config.Http.Validate.Status != response.StatusCode {
 		return errors.New(fmt.Sprintf("Wrong status code. Expect %d got %d", config.Http.Validate.Status, response.StatusCode))
@@ -132,6 +115,12 @@ func TcpConn() (net.Conn, error) {
 }
 
 func DoCheck() (error) {
+	t := time.Now()
+
+	defer func() {
+		state.checkDuration = time.Now().Sub(t).Nanoseconds()/1e6
+	}()
+
 	conn, err := TcpConn()
 
 	if err != nil {
@@ -175,6 +164,7 @@ func main() {
 	}
 
 	if verbose {
+		debug = true
 		log.SetLevel(log.TraceLevel)
 	}
 
@@ -184,6 +174,16 @@ func main() {
 	stateChange := make(chan int)
 
 	LoadConfig()
+
+	// initially we assume the website is down
+	state.currentState    = STATE_DOWN
+	state.lastCheckStatus = NOW_DEAD
+
+	if config.Tcponly {
+		state.checkType = "L4"
+	} else {
+		state.checkType = "L7"
+	}
 
 	if config.Monitor.Enabled {
 		go SpinWebSocket()

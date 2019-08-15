@@ -12,10 +12,10 @@ class Uninspiring(Exception):
 class Magnificent(resource.Resource):
     isLeaf = True
 
-    def render_POST(self, request):
+    def render_GET(self, request):
         if choice([True, True, True, False]):
             # http://media.tumblr.com/tumblr_m8m8z8szB31qin0c1.gif
-            # time.sleep(2)
+            # time.sleep(1)
 
             if choice([True, True, False]):
                 print('Mag')

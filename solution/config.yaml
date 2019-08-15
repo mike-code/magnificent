@@ -1,0 +1,55 @@
+# Server connection details. The hostname can also be an IP address
+Hostname: "localhost"
+Port: 12345
+
+# Interval between consecutive checks in milliseconds
+Interval: 700
+
+# Performs only L4 check
+Tcponly: false
+
+# Maximum number of bytes read from the response. Ignored if Tcponly is set to true.
+Chunk: 16348
+
+Timeout:
+  # Timeout to establish a TCP link in millisconds.
+  Connect: 2000
+  # Timeout to send HTTP request and receive
+  # the response (combined) in milliseconds.
+  # Ignored if Tcponly is set to true.
+  Check: 5000
+
+Monitor:
+  # If enabled, a reporting websocket is available at ws://{listen}/ws
+  Enabled: true
+  Listen: ":8080"
+  # Websocket write timeout
+  Timeout: 1000
+  # When false, only state transitions will be reported
+  # (eg. UP -> DOWN, but not UP -> UP)
+  TransitionOnly: false
+
+Tries:
+  # Number of consecutive positive health checks
+  # before server is considered Alive
+  Up: 2
+  # Number of consecutive negative health checks
+  # before server is considered Dead
+  Down: 3
+  # Number of health checks to be stored in memory
+  # This value must be greater or equal to both Tries.Up and Tries.Down
+  History: 100
+
+Http:
+  # HTTP request line details
+  Method: "GET"
+  Query: "/"
+  # Only version 1.0 and 1.1 are supported
+  Version: "1.1"
+  Validate:
+    # If enabled, the HTTP response will also be
+    # validated as part of the health check
+    Enabled: true
+    Status: 200
+    # Body is a regular expression to match in response's body
+    Body: "^Magni.+$"

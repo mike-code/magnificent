@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Magnificent Monitor</title>
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<style type="text/css">
+		.UP {
+			background: #c0ffc0
+		}
+
+		.T_UP {
+			background: #ffd020
+		}
+
+		.DOWN {
+			background: #ff9090
+		}
+
+		.T_DOWN {
+			background: #ffffa0
+		}
+
+		.WS_DOWN {
+			color: #b00040
+		}
+
+		.WS_UP {
+			color: #20a0FF
+		}
+
+		.box {
+			width: 300px;
+		    padding: 10px;
+		    text-align: center;
+		}
+	</style>
+    </head>
+<body>
+	<div id="app"></div>
+
+	<script type="module">
+		new Vue({
+		  render: h => h({
+			  name: 'App',
+			  data() { return {
+			  	LastCheck: {
+			  		status: '',
+			  		duration: '',
+			  	},
+			  	type: '',
+			  	http: 0,
+			  	timestamp: 0,
+			  	state: '',
+			  	ws: null,
+			  	wss: 0
+			  }},
+			  mounted() {
+			  	this.openWS()
+			  },
+			  methods: {
+			  	openWS() {
+			  		try {
+			  			this.ws = new WebSocket('ws://localhost:__PORT__/ws')
+
+					  	this.ws.onclose = e => {
+					  		this.wss = 0
+					  		this.openWS()
+					  	}
+
+					  	this.ws.onopen = e => {
+					  		this.wss = 1
+					  	}
+
+					  	this.ws.onmessage = ({data}) => {
+					  		let v = JSON.parse(data)
+
+					  		this.state              = v.state
+					  		this.timestamp          = v.time
+					  		this.http               = v.httpStatus
+					  		this.type               = v.type
+					  		this.LastCheck.duration = v.lastChkDuration
+					  		this.LastCheck.status   = v.lastCheck
+					  	}
+				  	} catch (e) {
+				  		this.wss = 0
+				  		this.openWS()
+			  		}
+			  	}
+			  },
+			  computed: {
+			  	ws_style() {
+			  		return this.wss ? 'WS_UP' : 'WS_DOWN'
+			  	},
+			  	ws_status() {
+			  		return this.wss ? 'UP' : 'DOWN'
+			  	},
+			  	mag_status() {
+			  		switch(this.state) {
+			  			case 'UP':
+			  				return 'ALIVE'
+			  				break
+			  			case 'T_UP':
+			  				return 'DEAD, GOING UP'
+			  				break
+			  			case 'T_DOWN':
+			  				return 'ALIVE, GOING DOWN'
+			  				break
+			  			case  'DOWN':
+			  				return 'DEAD'
+			  				break;
+			  		}
+			  	}
+			  },
+			  template: `
+			    <div class="container mx-auto p-4">
+			    <h4>This webpage is very ugly on purpose</h4>
+			    <h5>The WebSocket is: <span :class="ws_style">{{ ws_status }}</span></h5>
+			    <h5>The Magnificent server status is: <div :class="'box ' + state"><span v-html="mag_status"></span></div></h5>
+			    	<ul>
+			    		<li>Last check: {{ this.type }}{{ LastCheck.status }} {{ LastCheck.duration }}ms</li>
+			    	</ul>
+			    </div>
+			  `,
+		  }),
+		}).$mount(`#app`);
+	</script>
+</body>
+</html>
