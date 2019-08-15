@@ -14,14 +14,11 @@ class Magnificent(resource.Resource):
 
     def render_GET(self, request):
         if choice([True, True, True, False]):
-            # http://media.tumblr.com/tumblr_m8m8z8szB31qin0c1.gif
-            # time.sleep(1)
-
             if choice([True, True, False]):
-                print('Mag')
+                print('Magnificent')
                 return "Magnificent!".encode('utf-8')  # Twisted expects bytes.
             else:
-                print('Else')
+                print('Something else')
                 return "Something else".encode('utf-8')  # Twisted expects bytes.
         else:
             raise Uninspiring()

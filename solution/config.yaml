@@ -3,7 +3,7 @@ Hostname: "localhost"
 Port: 12345
 
 # Interval between consecutive checks in milliseconds
-Interval: 700
+Interval: 1500
 
 # Performs only L4 check
 Tcponly: false
@@ -13,7 +13,7 @@ Chunk: 16348
 
 Timeout:
   # Timeout to establish a TCP link in millisconds.
-  Connect: 2000
+  Connect: 500
   # Timeout to send HTTP request and receive
   # the response (combined) in milliseconds.
   # Ignored if Tcponly is set to true.
@@ -52,4 +52,4 @@ Http:
     Enabled: true
     Status: 200
     # Body is a regular expression to match in response's body
-    Body: "^Magni.+$"
+    Body: "^[M|m]agni.+$"
