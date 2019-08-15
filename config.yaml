@@ -1,0 +1,42 @@
+# Connection details. The hostname can also be an IP address
+Hostname: "localhost"
+Port: 12345
+
+# Maximum number of bytes read from the response
+Chunk: 16348
+
+# Interval between consecutive checks in milliseconds
+Interval: 1000
+
+# Performs only L4 check
+Tcponly: true
+
+# Sends RST right after SYN_ACK. Ignored if Tcponly is set to false
+# SynRst: false
+
+Timeout:
+  # Timeout to establish TCP link in millisconds.
+  ##### In SynRst mode it's the period between SYN and SYN_ACK
+  Connect: 2000
+  # Timeout to send HTTP request and receive
+  # the response (combined) in milliseconds.
+  # Ignored if Tcponly is set to true.
+  Check: 5000
+
+Monitor:
+  Enabled: true
+  Listen: ":8080"
+  Timeout: 1000
+
+Tries:
+  History: 20 # must be >= up/down
+  Up: 2
+  Down: 3
+Http:
+  Method: "POST"
+  Query: "/"
+  Version: "1.1"
+  Validate:
+    Enabled: true
+    Status: 200
+    Body: "^Magni.+$"
